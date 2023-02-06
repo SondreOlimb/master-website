@@ -1,6 +1,6 @@
 import Head from "next/head";
 
-import { Inter } from "@next/font/google";
+import { Ingrid_Darling, Inter } from "@next/font/google";
 import {
   ref,
   getDatabase,
@@ -28,6 +28,8 @@ type infoType = {
   lng: number;
   status: string;
   time: number;
+  range: number;
+  speed: number;
 };
 
 export default function Home() {
@@ -40,7 +42,6 @@ export default function Home() {
     const filter = query(dbRef, limitToLast(10));
     const sort = query(filter, orderByKey());
     onValue(sort, (snapshot) => {
-      console.log("here");
       setData(snapshot.val());
       return;
     });
@@ -82,18 +83,16 @@ export default function Home() {
           </div>
 
           <div className="stat place-items-center">
-            <div className="stat-title">Lat</div>
+            <div className="stat-title">Max Range</div>
             <div className="stat-value text-secondary">
-              {info ? info.lat.toPrecision(4) : "N/A"}
+              {info ? info.range : "N/A"}
             </div>
             <div className="stat-desc text-secondary"></div>
           </div>
 
           <div className="stat place-items-center">
-            <div className="stat-title">Long</div>
-            <div className="stat-value">
-              {info ? info.lng.toPrecision(4) : "N/A"}
-            </div>
+            <div className="stat-title">Max Speed</div>
+            <div className="stat-value">{info ? info.speed : "N/A"}</div>
             <div className="stat-desc"></div>
           </div>
         </div>

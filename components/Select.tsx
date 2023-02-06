@@ -1,11 +1,12 @@
 import React from "react";
-import { FieldValues, UseFormRegister } from "react-hook-form";
+import { Controller, FieldValues, UseFormRegister } from "react-hook-form";
 
 type SelectProps = React.DetailedHTMLProps<
   React.SelectHTMLAttributes<HTMLSelectElement>,
   HTMLSelectElement
 > & {
   register?: UseFormRegister<FieldValues>;
+  control?: any;
   name: string;
   options: string[];
   labelname: string;
@@ -16,6 +17,7 @@ export function Select({
   options,
   name,
   labelname,
+  control,
   ...rest
 }: SelectProps) {
   if (register) {
@@ -24,17 +26,26 @@ export function Select({
         <label className="label">
           <span className="label-text text-white">{labelname}</span>
         </label>
-        <select
-          {...register(name)}
-          className="select w-full max-w-xs"
-          {...rest}
-        >
-          {options.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
+        <Controller
+          render={({ field }) => {
+            return (
+              <select
+                {...field}
+                //   {...register(name)}
+                className="select w-full max-w-xs"
+                {...rest}
+              >
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            );
+          }}
+          name={name}
+          control={control}
+        />
       </div>
     );
   }

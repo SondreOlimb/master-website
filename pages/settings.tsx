@@ -6,10 +6,16 @@ import { getRadarSettings } from "./api/settings";
 import { useForm } from "react-hook-form";
 import Form from "@/components/Form";
 import { Select } from "@/components/Select";
-import { infoType, rangeSpeed, updateRadarInfo } from "./api/info";
+import {
+  getRadarInfo,
+  infoType,
+  rangeSpeed,
+  updateRadarInfo,
+} from "./api/info";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Input } from "@/components/Input";
+import { getDatabase } from "firebase/database";
 
 const Settings = () => {
   const radarParameters = useQuery({
@@ -20,17 +26,17 @@ const Settings = () => {
     queryKey: ["settings"],
     queryFn: getRadarSettings,
   });
+
+  const radarInfo = useQuery({
+    queryKey: ["radarInfo"],
+    queryFn: getRadarInfo,
+  });
   const notify = () => {
     toast.success("Success Notification !", {
       position: toast.POSITION.BOTTOM_CENTER,
     });
   };
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   watch,
-  //   formState: { errors },
-  // } = useForm();
+
   async function onSubmit(data: rangeSpeed) {
     const obj = {
       range: data.range,
@@ -45,16 +51,18 @@ const Settings = () => {
     notify();
   }
 
-  useEffect(() => {
-    console.log(radarParameters.data);
-  }, [radarParameters.data]);
-
   return (
     <ProtectedRoute>
       <div className="flex flex-col py-2 container items-center mx-auto w-full">
         <div className="flex flex-col gap-2 ">
-          {radarParameters.data && (
-            <Form onSubmit={onSubmit}>
+          {radarInfo.data && (
+            <Form
+              onSubmit={onSubmit}
+              defaultValues={{
+                speed: radarInfo.data.speed,
+                range: radarInfo.data.range,
+              }}
+            >
               <Select
                 labelname="Range"
                 name="range"
@@ -66,7 +74,7 @@ const Settings = () => {
                 options={["30", "50", "80", "100", "120"]}
               />
 
-              <button className="btn col-span-2" type="submit">
+              <button className="btn md:col-span-2" type="submit">
                 Submit
               </button>
               <ToastContainer />
@@ -82,7 +90,7 @@ const Settings = () => {
                 {Object.keys(radarParameters.data).map((key) => {
                   return <Input key={key} labelname={key} name={key} />;
                 })}
-                <button className="btn col-span-2" type="submit">
+                <button className="btn md:col-span-2" type="submit">
                   Submit
                 </button>
               </Form>
