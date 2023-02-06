@@ -1,18 +1,19 @@
-import Head from "next/head";
-
-import { Inter } from "@next/font/google";
-import {
-  ref,
-  getDatabase,
-  query,
-  limitToLast,
-  orderByKey,
-  onValue,
-} from "firebase/database";
 import { useEffect, useState } from "react";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Map from "react-map-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { useQuery } from "@tanstack/react-query";
+import { getRadarInfo } from "./api/info";
+import { getRadarDetections } from "./api/detections";
 import { secondsToDateTime } from "@/utils";
-
-const inter = Inter({ subsets: ["latin"] });
+import {
+  getDatabase,
+  limitToLast,
+  onValue,
+  orderByKey,
+  query,
+  ref,
+} from "firebase/database";
 
 type radarDetectionsType = {
   [time: number]: {
@@ -30,7 +31,7 @@ type infoType = {
   time: number;
 };
 
-export default function Home() {
+const DashboardPage = () => {
   const [online, setOnline] = useState(false);
   const [data, setData] = useState<radarDetectionsType>();
   const [info, setInfo] = useState<infoType>();
@@ -56,16 +57,7 @@ export default function Home() {
     });
   }, []);
   return (
-    <>
-      <Head>
-        <title>Trondheim harbour</title>
-        <meta name="description" content="Radar maps of Trondheim harbour" />
-        <meta
-          name="viewport"
-          content="width=device-width,heigth =device-heigth, initial-scale=1"
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <ProtectedRoute>
       <div className="flex flex-col justify-center items-center gap-8 py- mt-8 container mx-auto">
         <div className="stats stats-vertical lg:stats-horizontal shadow">
           <div className="stat place-items-center">
@@ -156,6 +148,8 @@ export default function Home() {
             mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
           /> */}
       </div>
-    </>
+    </ProtectedRoute>
   );
-}
+};
+
+export default DashboardPage;
