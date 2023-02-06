@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
-import firebase from "./firebase";
+import { auth, database } from "./firebase";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 
-const formatAuthUser = (user) => ({
+const formatAuthUser = (user: any) => ({
   uid: user.uid,
   email: user.email,
 });
 
 export default function useFirebaseAuth() {
-  const [authUser, setAuthUser] = useState(null);
+  const [authUser, setAuthUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const authStateChanged = async (authState) => {
+  const authStateChanged = async (authState: any) => {
     if (!authState) {
       setLoading(false);
       return;
@@ -30,23 +34,23 @@ export default function useFirebaseAuth() {
     setLoading(true);
   };
 
-  const signInWithEmailAndPassword = (email, password) =>
-    firebase.auth().signInWithEmailAndPassword(email, password);
+  const signInWithEAndP = (email: string, password: string) =>
+    signInWithEmailAndPassword(auth, email, password);
 
-  const createUserWithEmailAndPassword = (email, password) =>
-    firebase.auth().createUserWithEmailAndPassword(email, password);
+  const createUserWithEAndP = (email: string, password: string) =>
+    createUserWithEmailAndPassword(auth, email, password);
 
-  const signOut = () => firebase.auth().signOut().then(clear);
+  const signOut = () => auth.signOut().then(clear);
 
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(authStateChanged);
+    const unsubscribe = auth.onAuthStateChanged(authStateChanged);
     return () => unsubscribe();
   }, []);
 
   return {
     authUser,
     loading,
-    signInWithEmailAndPassword,
+    signInWithEAndP,
     createUserWithEmailAndPassword,
     signOut,
   };

@@ -19,5 +19,6 @@ export async function getRadarDetections(): Promise<
     });
   } catch (e) {
     console.error(e);
+    return;
   }
 }
