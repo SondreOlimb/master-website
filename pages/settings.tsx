@@ -11,6 +11,7 @@ import {
   infoType,
   rangeSpeed,
   updateRadarInfo,
+  updateRadarSettings,
 } from "./api/info";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,12 +38,39 @@ const Settings = () => {
     });
   };
 
-  async function onSubmit(data: rangeSpeed) {
+  type range = {
+    range: 40 | 70 | 100 | 150 | 200 | 250;
+    gain: number;
+  };
+
+  type settings_obj = {
+    RSBW: number;
+    RSSF: number;
+    RSID: number;
+    RSRG: number;
+  };
+
+  async function onSubmit(data: range) {
+    const range_object = {
+      40: { RSBW: 970, RSSF: 23800, RSID: 11106 },
+      70: { RSBW: 554, RSSF: 23848, RSID: 11106 },
+      100: { RSBW: 388, RSSF: 23931, RSID: 11106 },
+      150: { RSBW: 258, RSSF: 23996, RSID: 11106 },
+      200: { RSBW: 194, RSSF: 24028, RSID: 11106 },
+      250: { RSBW: 156, RSSF: 24047, RSID: 11106 },
+    };
+
     const obj = {
       range: data.range,
-      speed: data.speed,
+      gain: data.gain,
     };
+    let settings_update: settings_obj = {
+      ...range_object[data.range],
+      RSRG: data.gain,
+    };
+
     await updateRadarInfo(obj);
+    await updateRadarSettings(range_object[data.range]);
     notify();
   }
 
@@ -59,8 +87,8 @@ const Settings = () => {
             <Form
               onSubmit={onSubmit}
               defaultValues={{
-                speed: radarInfo.data.speed,
                 range: radarInfo.data.range,
+                gain: radarInfo.data.gain,
               }}
             >
               <Select
@@ -73,6 +101,7 @@ const Settings = () => {
                 name="speed"
                 options={["30", "50", "80", "100", "120"]}
               />
+              <Input labelname={"Gain"} name={"gain"} />
 
               <button className="btn md:col-span-2" type="submit">
                 Submit
@@ -80,6 +109,7 @@ const Settings = () => {
               <ToastContainer />
             </Form>
           )}
+
           {radarParameters.data && (
             <div>
               <h3>Parameters</h3>

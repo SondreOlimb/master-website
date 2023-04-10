@@ -13,7 +13,7 @@ export default function Form({ defaultValues, children, onSubmit }: FormProps) {
 
   return (
     <form
-      className=" grid grid-cols-1  gap-4  "
+      className=" grid grid-cols-1 md:grid-cols-2 gap-4  "
       onSubmit={handleSubmit(onSubmit)}
     >
       {React.Children.map(children, (child) => {
