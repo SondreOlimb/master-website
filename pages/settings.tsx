@@ -68,9 +68,9 @@ const Settings = () => {
       ...range_object[data.range],
       RSRG: data.gain,
     };
-
+    console.log(settings_update);
     await updateRadarInfo(obj);
-    await updateRadarSettings(range_object[data.range]);
+    await updateRadarSettings(settings_update);
     notify();
   }
 
