@@ -105,13 +105,13 @@ const DashboardPage = () => {
             <div className="stat-desc"></div>
           </div>
         </div>
-        {logs && (
+        {/* {logs && (
           <div className="card w-96 bg-base-100 shadow-xl">
             {Object.entries(logs).map(([id, log]) => {
               return <p key={id}>{log}</p>;
             })}
           </div>
-        )}
+        )} */}
         {/* <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className={"flex items-center gap-2 text-center"}>
