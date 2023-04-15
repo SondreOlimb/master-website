@@ -24,6 +24,12 @@ type radarDetectionsType = {
   }[];
 };
 
+type radarlogsType = {
+  [id: string]: {
+    log: string;
+  }[];
+};
+
 type infoType = {
   lat: number;
   lng: number;
@@ -35,14 +41,24 @@ const DashboardPage = () => {
   const [online, setOnline] = useState(false);
   const [data, setData] = useState<radarDetectionsType>();
   const [info, setInfo] = useState<infoType>();
+  const [logs, setLogs] = useState<radarlogsType>();
 
   useEffect(() => {
     const dbRef = ref(getDatabase(), `radar/detections`);
     const filter = query(dbRef, limitToLast(10));
     const sort = query(filter, orderByKey());
     onValue(sort, (snapshot) => {
-      console.log("here");
       setData(snapshot.val());
+      return;
+    });
+  }, []);
+  useEffect(() => {
+    const dbRef = ref(getDatabase(), `radar/logs`);
+    const filter = query(dbRef, limitToLast(10));
+    const sort = query(filter, orderByKey());
+    onValue(sort, (snapshot) => {
+      console.log(snapshot.val());
+      setLogs(snapshot.val());
       return;
     });
   }, []);
@@ -89,6 +105,13 @@ const DashboardPage = () => {
             <div className="stat-desc"></div>
           </div>
         </div>
+        {logs && (
+          <div className="card w-96 bg-base-100 shadow-xl">
+            {Object.entries(logs).map(([id, log]) => {
+              return <p key={id}>{log}</p>;
+            })}
+          </div>
+        )}
         {/* <div className="card w-96 bg-base-100 shadow-xl">
             <div className="card-body">
               <div className={"flex items-center gap-2 text-center"}>

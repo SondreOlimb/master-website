@@ -10,7 +10,9 @@ import {
   onValue,
 } from "firebase/database";
 import { useEffect, useState } from "react";
-import { secondsToDateTime } from "@/utils";
+import { secondsToDateTime, nsToDateTimeString } from "@/utils";
+import classNames from "classnames";
+import RangeDopplerPlot from "@/components/RangeDopplerPlot";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,11 +33,24 @@ type infoType = {
   range: number;
   speed: number;
 };
+type trackType = {
+  [time: number]: {
+    id: number;
+    range: number;
+    vel: number;
+  }[];
+};
+type radarlogsType = {
+  [id: string]: string;
+};
 
 export default function Home() {
   const [online, setOnline] = useState(false);
   const [data, setData] = useState<radarDetectionsType>();
   const [info, setInfo] = useState<infoType>();
+  const [logs, setLogs] = useState<radarlogsType>();
+  const [tracks, setTracks] = useState<trackType>();
+  const [track, setTrack] = useState<trackType>();
 
   useEffect(() => {
     const dbRef = ref(getDatabase(), `radar/detections`);
@@ -43,6 +58,27 @@ export default function Home() {
     const sort = query(filter, orderByKey());
     onValue(sort, (snapshot) => {
       setData(snapshot.val());
+      return;
+    });
+  }, []);
+
+  useEffect(() => {
+    const dbRef = ref(getDatabase(), `radar/tracks`);
+    const filter = query(dbRef, limitToLast(10));
+    const sort = query(filter, orderByKey());
+    onValue(sort, (snapshot) => {
+      const data: trackType = snapshot.val() as trackType;
+      setTrack(data);
+      return;
+    });
+  }, []);
+
+  useEffect(() => {
+    const dbRef = ref(getDatabase(), `radar/tracks`);
+    const filter = query(dbRef, limitToLast(10));
+
+    onValue(filter, (snapshot) => {
+      setTracks(snapshot.val());
       return;
     });
   }, []);
@@ -56,6 +92,37 @@ export default function Home() {
       return;
     });
   }, []);
+
+  useEffect(() => {
+    const dbRef = ref(getDatabase(), `radar/logs`);
+    const filter = query(dbRef, limitToLast(10));
+    const sort = query(filter, orderByKey());
+    onValue(sort, (snapshot) => {
+      setLogs(snapshot.val());
+      return;
+    });
+  }, []);
+
+  function formatLog(log: string) {
+    const [date, time, type, ...message] = log.split(" ");
+    return (
+      <div className="whitespace-nowrap">
+        <span className={classNames(" text-green-500 ")}>
+          {date + " " + time}
+        </span>
+        <span
+          className={classNames({
+            "text-yellow-200 font-bold": type == "WARNING",
+            "text-red-500 font-bold": type == "CRITICAL",
+            "text-orange-500 font-bold": type == "ERROR",
+            "text-blue-500 font-bold": type == "INFO",
+          })}
+        >{` ${type} `}</span>
+
+        {message.join(" ")}
+      </div>
+    );
+  }
   return (
     <>
       <Head>
@@ -96,24 +163,33 @@ export default function Home() {
             <div className="stat-desc"></div>
           </div>
         </div>
-        {/* <div className="card w-96 bg-base-100 shadow-xl">
-            <div className="card-body">
-              <div className={"flex items-center gap-2 text-center"}>
-                <h2 className="card-title text-white">Radar</h2>
-
-                {online ? (
-                  <div className="badge badge-success gap-2">Online</div>
-                ) : (
-                  <div className="badge badge-error gap-2">Offline</div>
-                )}
-              </div>
-              <p>{info?.lat}</p>
-              <h2>Latitude:</h2>
-              <p> {info?.lng}</p>
-              <h2> Longitude:</h2>
+        {track && (
+          <RangeDopplerPlot
+            rangeSetting={200}
+            speedSetting={30}
+            cords={
+              Object.entries(track).map(([time, cords]) => {
+                return { data: cords };
+              })[0]
+            }
+          />
+        )}
+        {logs && (
+          <div className="card w-5/6 bg-base-100 p-4 overflow-x-scroll">
+            <div className="flex flex-col gap-2">
+              {Object.entries(logs)
+                .map(([id, log]) => {
+                  return (
+                    <div key={id} className="">
+                      {formatLog(log)}
+                    </div>
+                  );
+                })
+                .reverse()}
             </div>
-          </div> */}
-        {data && (
+          </div>
+        )}
+        {tracks && (
           <>
             <table className="table w-fit">
               <thead>
@@ -125,15 +201,15 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(data)
-                  .map(([time, detections]) => {
-                    return detections.map((detection, index) => {
+                {Object.entries(tracks)
+                  .map(([time, trackArray]) => {
+                    return trackArray.map((track, index) => {
                       return (
                         <tr key={index}>
-                          <td>{secondsToDateTime(+time)}</td>
-                          <td>{detection.id}</td>
-                          <td>{detection.range}</td>
-                          <td>{detection.speed}</td>
+                          <td>{nsToDateTimeString(+time)}</td>
+                          <td>{track.id}</td>
+                          <td>{track.range}</td>
+                          <td>{track.vel}</td>
                         </tr>
                       );
                     });
